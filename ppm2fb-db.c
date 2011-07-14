@@ -1,8 +1,9 @@
 /*
- * ppm2fb
+ * ppm2fb-db
  * Simple program which displays a PPM bitmap using the framebuffer.
  * Note, these routines assume a 32-bit video mode.
  * Mostly intended as a test of the "fb.c" library.
+ * This version uses double buffering and the fb_flip() function.
  */
 #include "fb.h"
 #include <stdio.h>
@@ -109,15 +110,19 @@ int main(int argc, char* argv[]) {
 	return EX_USAGE;
     }
     
-    // initialize the framebuffer (with single buffering)
+    // initialize the framebuffer
     fprintf(stderr, "Starting up...\n");
-    if((fb = fb_open(0x11e, 0, 0)) == NULL) {
+    if((fb = fb_open(0x11e, 1, 0)) == NULL) {
 	perror("fb_open");
 	return EX_UNAVAILABLE;
     }
 
     // clear the screen in a shade of blue
+    // (note, when double-buffering is active, this applies to the *work* buffer, not the show buffer)
     cls(fb, 0x00007F);
+
+    // switch video pages (this should make the hidden blue screen appear)
+    fb_flip(fb);
 
     // pause
     getc(stdin);
@@ -125,7 +130,7 @@ int main(int argc, char* argv[]) {
     // load the image
     img = read_ppm(argv[1]);
     
-    // clear the screen in a shade of red
+    // clear the screen in a shade of red (again, this applies to the hidden buffer)
     cls(fb, 0x7F0000);
 
     // display the image centered
@@ -133,6 +138,9 @@ int main(int argc, char* argv[]) {
     
     // free the image
     free(img);
+
+    // switch video pages (this should make the hidden image on a red screen appear)
+    fb_flip(fb);
 
     // pause for dramatic effect...
     getc(stdin);

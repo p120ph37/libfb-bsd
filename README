@@ -4,9 +4,9 @@ A console framebuffer graphics library for FreeBSD
 
 Notes:
 This works on FreeBSD 8.2 as root.
-Root is necessary due to /dev/mem access requirement.
+Root is necessary due to /dev/mem and kernel symbol access requirements.
 Example included which displays a PPM file.
 
 Example:
-cc ppm2fb.c fb.c -o ppm2fb
+make examples
 ppm2fb lena.ppm
